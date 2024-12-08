@@ -1,0 +1,7 @@
+{
+    "keras_model_architecture": "D:/Projects/ML/cnn_model/model/model_architecture.json",
+    "keras_model_weights": "D:/Projects/ML/cnn_model/model/model_weights.h5",
+    "pickle_model": "D:/Projects/ML/cnn_model/model/xgboost_model.pkl",
+    "health_risk_model_encoder_path": "D:/Projects/ML/cnn_model/model/encoder.pkl"
+  }
+  

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Prediction</title>
+</head>
+<body>
+    <h1>Upload Image for Prediction (Keras Model)</h1>
+    <form action="/classify_image/" method="POST" enctype="multipart/form-data">
+        <label for="image">Choose an image:</label>
+        <input type="file" name="image" accept="image/*" id="image" required>
+        <button type="submit">Predict</button>
+    </form>
+
+    <h1>Predict Using Pickle Model</h1>
+    <form action="/predict_health_risk/" method="POST">
+        <label for="data">Enter input data (JSON format):</label>
+        <textarea name="data" rows="4" cols="50" placeholder='e.g., [1, 2, 3]' required></textarea>
+        <button type="submit">Predict</button>
+    </form>
+</body>
+</html>
