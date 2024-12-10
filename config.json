@@ -1,0 +1,13 @@
+{
+    "keras_model_paths": [
+        "D:/Projects/ML/cnn_model/model/inceptionv3_model_split_1.h5",
+        "D:/Projects/ML/cnn_model/model/inceptionv3_model_split_2.h5",
+        "D:/Projects/ML/cnn_model/model/inceptionv3_model_split_3.h5",
+        "D:/Projects/ML/cnn_model/model/inceptionv3_model_split_4.h5",
+        "D:/Projects/ML/cnn_model/model/inceptionv3_model_split_5.h5"
+    ],
+    "keras_model_weights": "D:/Projects/ML/cnn_model/model/model_weights.h5",
+    "pickle_model": "D:/Projects/ML/cnn_model/model/xgboost_model.pkl",
+    "health_risk_model_encoder_path": "D:/Projects/ML/cnn_model/model/encoder.pkl"
+  }
+  
