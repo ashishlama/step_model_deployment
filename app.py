@@ -1,20 +1,16 @@
 from flask import Flask, render_template, request, jsonify
 import numpy as np
 from PIL import Image
-import base64
-import re
 import pickle
-from tensorflow.keras.models import model_from_json
 import json
 import logging
 # from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
-import tensorflow as tf
+# import tensorflow as tf
 import os
-from werkzeug.utils import secure_filename
-from tensorflow.keras.models import load_model
-from tensorflow.keras.layers import InputLayer
-import h5py
+# from werkzeug.utils import secure_filename
+# from tensorflow.keras.models import load_model
+# import h5py
 
 app = Flask(__name__)
 
@@ -25,11 +21,11 @@ def load_config(config_file='config.json'):
     return config
 
 
-def fix_model(model_path):
-    with h5py.File(model_path, 'r+') as f:
-        model_config = f.attrs['model_config'].decode('utf-8')
-        model_config = model_config.replace('"batch_shape": [', '"batch_input_shape": [')
-        f.attrs['model_config'] = model_config.encode('utf-8')
+# def fix_model(model_path):
+#     with h5py.File(model_path, 'r+') as f:
+#         model_config = f.attrs['model_config'].decode('utf-8')
+#         model_config = model_config.replace('"batch_shape": [', '"batch_input_shape": [')
+#         f.attrs['model_config'] = model_config.encode('utf-8')
 
 def get_model_paths(config):
     keras_model_paths = config.get('keras_model_paths', [])
@@ -39,37 +35,37 @@ def get_model_paths(config):
     health_risk_model_encoder_path = config.get('health_risk_model_encoder_path', '')
     return keras_model_paths, keras_model_weights_path, pickle_model_path, log_path, health_risk_model_encoder_path
 
-def convert_h5_to_saved_model(h5_model_path, saved_model_dir):
-    """
-    Converts a Keras .h5 model to TensorFlow SavedModel format.
-    """
-    try:
-        logger.debug(f"Loading .h5 model from {h5_model_path}")
-        model = load_model(h5_model_path)
-        logger.debug("Model loaded successfully.")
+# def convert_h5_to_saved_model(h5_model_path, saved_model_dir):
+#     """
+#     Converts a Keras .h5 model to TensorFlow SavedModel format.
+#     """
+#     try:
+#         logger.debug(f"Loading .h5 model from {h5_model_path}")
+#         model = load_model(h5_model_path)
+#         logger.debug("Model loaded successfully.")
         
-        # Save as SavedModel format
-        logger.debug(f"Saving model to {saved_model_dir}")
-        model.save(saved_model_dir)
-        logger.info(f"Model converted and saved at {saved_model_dir}")
-        return saved_model_dir
-    except Exception as e:
-        logger.error(f"Failed to convert model {h5_model_path}: {e}")
-        return None
+#         # Save as SavedModel format
+#         logger.debug(f"Saving model to {saved_model_dir}")
+#         model.save(saved_model_dir)
+#         logger.info(f"Model converted and saved at {saved_model_dir}")
+#         return saved_model_dir
+#     except Exception as e:
+#         logger.error(f"Failed to convert model {h5_model_path}: {e}")
+#         return None
     
 
-def load_saved_model(model_path):
-    """
-    Loads a TensorFlow SavedModel.
-    """
-    try:
-        logger.debug(f"Loading SavedModel from {model_path}")
-        model = tf.keras.models.load_model(model_path)
-        logger.info("Model loaded successfully.")
-        return model
-    except Exception as e:
-        logger.error(f"Failed to load model from {model_path}: {e}")
-        return None
+# def load_saved_model(model_path):
+#     """
+#     Loads a TensorFlow SavedModel.
+#     """
+#     try:
+#         logger.debug(f"Loading SavedModel from {model_path}")
+#         model = tf.keras.models.load_model(model_path)
+#         logger.info("Model loaded successfully.")
+#         return model
+#     except Exception as e:
+#         logger.error(f"Failed to load model from {model_path}: {e}")
+#         return None
     
 config = load_config()
 
@@ -90,38 +86,16 @@ logger = logging.getLogger(__name__)
 # Define allowed extensions for image upload
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-# Convert .h5 models to SavedModel format if needed
-# saved_models = []
-# for h5_path in keras_model_paths:
-#     # Derive a SavedModel directory path
-#     saved_model_dir = os.path.splitext(h5_path)[0] + "_saved"
-    
-#     # Convert if not already done
-#     if not os.path.exists(saved_model_dir):
-#         logger.debug(f"Converting {h5_path} to SavedModel format...")
-#         converted_model = convert_h5_to_saved_model(h5_path, saved_model_dir)
-#         if converted_model:
-#             saved_models.append(converted_model)
-#     else:
-#         logger.debug(f"SavedModel already exists at {saved_model_dir}")
-#         saved_models.append(saved_model_dir)
-# # Load all SavedModels
-# keras_models = [load_saved_model(path) for path in saved_models]
+# keras_models = []
+# for path in keras_model_paths:
+#     try:
+#         # fix_model(path)  # Adjust model config if needed
+#         keras_models.append(load_model(path))
+#     except Exception as e:
+#         logger.error(f"Failed to load model {path}: {e}")
+# keras_models = [load_model(path) for path in keras_model_paths]
+# print(f"Loaded {len(keras_models)} Keras models successfully.")
 
-# Load models from the pickle file
-# with open(keras_model_architecture_path, 'rb') as file:
-#     keras_model = pickle.load(file)
-keras_models = []
-for path in keras_model_paths:
-    try:
-        # fix_model(path)  # Adjust model config if needed
-        keras_models.append(load_model(path))
-    except Exception as e:
-        logger.error(f"Failed to load model {path}: {e}")
-keras_models = [load_model(path) for path in keras_model_paths]
-print(f"Loaded {len(keras_models)} Keras models successfully.")
-
-# Assuming 'splits' is predefined somewhere
 splits = [
     {'split_1': ['apple_pie', 'baby_back_ribs', 'baklava', 'beef_carpaccio', 'beef_tartare', 
      'beet_salad', 'beignets', 'bibimbap', 'bread_pudding', 'breakfast_burrito', 
@@ -158,97 +132,55 @@ def allowed_file(filename):
 
 
 # Image preprocessing function (adjust if necessary)
-def preprocess_image(img_path):
-    logger.info("Preprocessing image")
-    img = tf.keras.preprocessing.image.load_img(img_path, target_size=(299, 299))  # Adjust for your model's input size
-    img_array = tf.keras.preprocessing.image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array /= 255.0  # Normalize
-    logger.info("Completed preprocessing the image")
-    return img_array
+# def preprocess_image(img_path):
+#     logger.info("Preprocessing image")
+#     img = tf.keras.preprocessing.image.load_img(img_path, target_size=(299, 299))  # Adjust for your model's input size
+#     img_array = tf.keras.preprocessing.image.img_to_array(img)
+#     img_array = np.expand_dims(img_array, axis=0)
+#     img_array /= 255.0  # Normalize
+#     logger.info("Completed preprocessing the image")
+#     return img_array
 
 # Combined model prediction function (same as before)
-def combined_model_prediction(image_path, keras_models, splits, output_path=None):
-    img_array = preprocess_image(image_path)
-    best_prediction = None
-    best_confidence = -1
-    best_class = None
-    best_split = None
-    index = 0
+# def combined_model_prediction(image_path, keras_models, splits, output_path=None):
+#     img_array = preprocess_image(image_path)
+#     best_prediction = None
+#     best_confidence = -1
+#     best_class = None
+#     best_split = None
+#     index = 0
 
-    # # Iterate through each Keras model and get predictions
-    # for idx, model in enumerate(keras_models):
-        
-        
-    #     predictions = model.predict(img_array)
+#     for model, split in zip(keras_models, splits):
+#         try:
+#             logger.info(f"Predicting using model {index + 1}")
+#             logger.info(f"Prediction in progress for model {index + 1}")
+#             # Get model predictions for the image
+#             predictions = model.predict(img_array)
+#             logger.info(f"Prediction complete for model {index + 1}")
+#             # Get the highest confidence from the model's prediction
+#             confidence = np.max(predictions)
+#             index+=1
+
+#             split_key = list(split.keys())[0]  # Get the key (e.g., 'split_1')
+#             split_classes = split[split_key] 
+
+#             # Update the best prediction if the confidence is higher than the previous best
+#             if confidence > best_confidence:
+#                 logger.info(confidence)
+#                 best_confidence = confidence
+#                 prediction_index = np.argmax(predictions)
+#                 logger.info(f"Prediction index: {prediction_index}")
+#                 best_class = split_classes[prediction_index]  # Choose the class with the highest prediction
+#                 best_split = split_key
+#         except Exception as e:
+#             print(f"Error processing model {index + 1}: {e}")
+#             continue
+
+#     if best_class is None:
+#         raise ValueError("No valid prediction was found. Check your models and data.")
     
-    #     confidence = np.max(predictions)
-    #     if confidence > best_confidence:
-    #         best_confidence = confidence
-    #         best_prediction = np.argmax(predictions)
-    #         best_model_index = idx
-
-    for model, split in zip(keras_models, splits):
-        try:
-            logger.info(f"Predicting using model {index + 1}")
-            logger.info(f"Prediction in progress for model {index + 1}")
-            # Get model predictions for the image
-            predictions = model.predict(img_array)
-            logger.info(f"Prediction complete for model {index + 1}")
-            # Get the highest confidence from the model's prediction
-            confidence = np.max(predictions)
-            index+=1
-
-            split_key = list(split.keys())[0]  # Get the key (e.g., 'split_1')
-            split_classes = split[split_key] 
-
-            # Update the best prediction if the confidence is higher than the previous best
-            if confidence > best_confidence:
-                logger.info(confidence)
-                best_confidence = confidence
-                prediction_index = np.argmax(predictions)
-                logger.info(f"Prediction index: {prediction_index}")
-                best_class = split_classes[prediction_index]  # Choose the class with the highest prediction
-                best_split = split_key
-        except Exception as e:
-            print(f"Error processing model {index + 1}: {e}")
-            continue
-
-    # Use pickle model if needed (example prediction logic)
-    # logger.info("Over here")
-    # pickle_prediction = pickle_model.predict([[best_confidence]])
-    # logger.info("Down there")
-    if best_class is None:
-        raise ValueError("No valid prediction was found. Check your models and data.")
-    
-    print(f"Best prediction: {best_class} (confidence: {best_confidence:.2f}) from {best_split}")
-    return best_class
-
-
-    # for model, split in zip(models, splits):
-    #     predictions = model.predict(img_array)
-    #     confidence = np.max(predictions)
-    #     if confidence > best_confidence:
-    #         best_confidence = confidence
-    #         best_class = split[np.argmax(predictions)]
-    #         best_split = split
-
-    # # Estimate calories for the best prediction
-    # # estimated_calories = estimate_calories(best_class, calories_data)
-    
-    # return best_class, best_confidence
-
-# logger.info("Loading TensorFlow model architecture from JSON...")
-# with open(keras_model_architecture_path, 'r') as json_file:
-#     model_json = json_file.read()
-
-# keras_model = model_from_json(model_json)
-
-# logger.info("Loading TensorFlow model weights from .h5 file...")
-# keras_model.load_weights(keras_model_weights_path)
-
-# logger.info("Compiling the TensorFlow model...")
-# keras_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+#     print(f"Best prediction: {best_class} (confidence: {best_confidence:.2f}) from {best_split}")
+#     return best_class
 
 def load_pickle_model():
     logger.info("Loading Pickle model from .pkl file...")
@@ -277,140 +209,68 @@ def preprocess_input(data):
 pickle_model = load_pickle_model()
 health_risk_model_encoder = load_model_encoder()
 
-# Function to convert base64 image to an actual image file
-# def convertImage(imgData1):
-#     logger.info("Starting conversion")
+# def convertImage(file):
+#     try:
 
-#     # Search for the base64 data
-#     match = re.search(b'base64, (.*)', imgData1)
-    
-#     # Check if a match is found
-#     if match:
-#         imgstr = match.group(1)
-#         logger.info("Base64 string extracted")
+#         img = Image.open(file).convert('L')  # Convert image to grayscale
         
-#         # Write the base64 data to an image file
-#         with open('output.png', 'wb') as output:
-#             logger.info("Writing the image file")
-#             output.write(base64.b64decode(imgstr))
-#             logger.info("Image file written successfully")
-#     else:
-#         logger.error("Error: Invalid or missing base64 string in the image data.")
-#         raise ValueError("Failed to decode base64 image data.")
+#         # Resize the image to 28x28 pixels (you can change the size as needed)
+#         img_resized = img.resize((28, 28))
+        
+#         # Convert image to a numpy array
+#         x = np.array(img_resized)
+        
+#         # Invert the image (if required)
+#         x = 255 - x  # Invert image to match the model's training (if needed)
+        
+#         # Normalize the image and reshape it to match the model's input
+#         x = x.reshape(1, 28, 28, 1) / 255.0  # Normalize to [0, 1] and reshape to (1, 28, 28, 1)
+        
+#         # Flatten the image to (1, 784) before passing to the model
+#         x = x.reshape(1, 784)  # Flatten to 784
 
-def convertImage(file):
-    try:
-
-        img = Image.open(file).convert('L')  # Convert image to grayscale
-        
-        # Resize the image to 28x28 pixels (you can change the size as needed)
-        img_resized = img.resize((28, 28))
-        
-        # Convert image to a numpy array
-        x = np.array(img_resized)
-        
-        # Invert the image (if required)
-        x = 255 - x  # Invert image to match the model's training (if needed)
-        
-        # Normalize the image and reshape it to match the model's input
-        x = x.reshape(1, 28, 28, 1) / 255.0  # Normalize to [0, 1] and reshape to (1, 28, 28, 1)
-        
-        # Flatten the image to (1, 784) before passing to the model
-        x = x.reshape(1, 784)  # Flatten to 784
-
-        return x
-        # # Open the image from the uploaded file
-        # img = Image.open(file.stream).convert('L')  # Convert image to grayscale
-        # img = np.array(img.resize((28, 28)))  # Resize to 28x28 (change based on your model)
-        # img = 255 - img  # Invert the image
-        # img = img.reshape(1, 28, 28, 1) / 255.0  # Normalize to [0, 1] and reshape
-        # return img
-    except Exception as e:
-        logger.error(f"Error processing the image: {e}")
-        raise
+#         return x
+#     except Exception as e:
+#         logger.error(f"Error processing the image: {e}")
+#         raise
 
 @app.route('/')
 def index_view():
     return render_template('index.html')
 
 # Endpoint to classify an image
-@app.route('/classify_image', methods=['POST'])
-def classify_image():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
+# @app.route('/classify_image', methods=['POST'])
+# def classify_image():
+#     if 'file' not in request.files:
+#         return jsonify({'error': 'No file provided'}), 400
 
-    file = request.files['file']
+#     file = request.files['file']
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join('uploads', filename)
-        file.save(file_path)
+#     if file and allowed_file(file.filename):
+#         filename = secure_filename(file.filename)
+#         file_path = os.path.join('uploads', filename)
+#         file.save(file_path)
 
-        try:
-            # Get predictions using the combined model prediction function
-            best_class = combined_model_prediction(
-                file_path,keras_models, splits
-            )
+#         try:
+#             # Get predictions using the combined model prediction function
+#             best_class = combined_model_prediction(
+#                 file_path,keras_models, splits
+#             )
 
-            os.remove(file_path)  # Clean up uploaded file
+#             os.remove(file_path)  # Clean up uploaded file
 
-            return jsonify({
-                'class_label': best_class 
-                # ,
-                #     'confidence': float(confidence),
-                #     'health_risk_prediction': float(health_risk),
-                #     'best_model_index': int(best_model_index)
-            })
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    else:
-        return jsonify({'error': 'Invalid file type'}), 400
+#             return jsonify({
+#                 'class_label': best_class 
+#                 # ,
+#                 #     'confidence': float(confidence),
+#                 #     'health_risk_prediction': float(health_risk),
+#                 #     'best_model_index': int(best_model_index)
+#             })
+#         except Exception as e:
+#             return jsonify({'error': str(e)}), 500
+#     else:
+#         return jsonify({'error': 'Invalid file type'}), 400
     
-@app.route('/classify_image_prev', methods=['POST'])
-def classify_image_prev():
-    try:
-        # # Parse input data (assuming base64-encoded image in the request body)
-        # imgData = request.get_data()
-        # convertImage(imgData)
-        # logger.info("Classifying images")
-        # # Open the image, convert it to grayscale and resize it
-        # x = Image.open('output.png').convert('L')  # Convert image to grayscale
-        # x = np.array(x.resize((28, 28)))  # Resize to 28x28 (change based on your model)
-        # x = 255 - x  # Invert the image
-        # x = x.reshape(1, 28, 28, 1) / 255.0  # Normalize to [0, 1] and reshape
-        
-        # Check if a file is part of the request
-        if 'file' not in request.files:
-            return jsonify({"error": "No file part"}), 400
-
-        file = request.files['file']
-
-        # If no file is selected
-        if file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
-
-        logger.info("Processing uploaded image")
-
-        img_file = request.files['file']
-
-        # Process the image file and prepare it for classification
-        x = convertImage(img_file)
-
-        # Preprocess the image
-        # processed_data = preprocess_input(x)
-
-        logger.info("Classifying image")
-        # Make the prediction using the Keras model
-        predictions = keras_model.predict(x)
-
-        # Return the prediction result as JSON
-        response = np.argmax(predictions, axis=1)
-        logger.info("Classification successful for model.")
-        return jsonify({"predictions": response.tolist()})
-
-    except Exception as e:
-        logger.error("Error during classification for model: %s", str(e))
-        return jsonify({"error": str(e)}), 400
 
 @app.route('/predict_health_risk', methods=['POST'])
 def predict_health_risk():
@@ -418,20 +278,6 @@ def predict_health_risk():
         input_data = request.json.get("data")
         logger.info("Predicting health risk")
         input_df = pd.DataFrame([input_data])
-
-        # encoded_input_data = health_risk_model_encoder.transform(input_df)
-        # feature_names = health_risk_model_encoder.get_feature_names_out()
-
-        # encoded_input_df = pd.DataFrame(encoded_input_data, columns=feature_names, index=input_df.index)
-
-        # # Make sure the input data has the same columns as the model expects
-        # # (adding missing columns if necessary, as the encoder might ignore some unknown values)
-        # missing_columns = set(health_risk_model_encoder.get_feature_names_out()) - set(encoded_input_df.columns)
-        # for col in missing_columns:
-        #     encoded_input_df[col] = 0 
-
-        # encoded_input_df = encoded_input_df[health_risk_model_encoder.get_feature_names_out()]
-
 
         numeric_columns = ['Calories', 'Weight', 'Height', 'BMI', 'Waist circumference', 'hip circumference', 'Age', 'Monthly_eatingout_spending', 'Minutes_walk/bicycle', 'Minutes_doing_recreationalactivities', 'Sleep hours_weekdays', 'Sleep_hours_weekend', 'No_of_cigarettes_perday']
         categorical_columns = ['MaritalStatus', 'GenderStatus', 'Family_SizeStatus', 'Family_IncomeStatus', 'Alcohol_consumptionStatus']
@@ -447,12 +293,6 @@ def predict_health_risk():
 
         # Combine encoded categorical data with numeric data
         merged_df = pd.concat([encoded_categorical_df, input_df[numeric_columns]], axis=1)
-
-        # Ensure column order matches model training
-        # expected_columns = list(health_risk_model.feature_names_in_)  # Replace with the actual expected column list
-        # merged_df = merged_df[expected_columns]
-
-
 
         input_data_reshaped = merged_df.values.reshape(1, -1)
         logger.info(input_data_reshaped)
